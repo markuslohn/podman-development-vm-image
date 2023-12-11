@@ -1,0 +1,44 @@
+FROM ubuntu:lunar
+LABEL MAINTAINER="Markus Lohn <markus.lohn@web.de>"
+
+ARG DEV_USER=vscdev
+ARG DEV_PASSWORD=vscdev
+ARG DEV_USER_UID=1001
+ARG DEV_USER_SSH_KEY=vscdev_ssh_key
+
+RUN export DEBIAN_FRONTEND=noninteractive \
+    && apt-get -y update && yes | unminimize \
+    && echo "------------------------------------------------------ Common" \
+    && apt-get install -y sudo jq git \
+    && apt-get install -y software-properties-common \
+    && apt-get install -y curl wget \
+    && apt-get install -y zip gzip tar \
+    && apt-get install -y vim-tiny \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
+    && echo "------------------------------------------------------ SSH-Server" \
+    && apt-get -y update && apt-get install -y openssh-server \
+    && apt-get install -y passwd \
+    && sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config \
+    && echo "------------------------------------------------------ Ansible" \
+    && apt-add-repository ppa:ansible/ansible \
+    && apt-get install -y ansible \
+    && echo "------------------------------------------------------ Create user ${DEV_USER}" \
+    && useradd -u ${DEV_USER_UID} -m -G sudo -s /bin/bash ${DEV_USER} \
+    && echo "${DEV_USER} ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/$DEV_USER \
+    && chmod 440 /etc/sudoers.d/$DEV_USER \
+    && mkdir -p /home/$DEV_USER/.ssh \
+    && ln -s /run/secrets/$DEV_USER_SSH_KEY /home/$DEV_USER/.ssh/authorized_keys \
+    && echo "Host *\n\tStrictHostKeyChecking no\n" >> /home/$DEV_USER/.ssh/config  \
+    && chown -R $DEV_USER:$DEV_PASSWORD /home/$DEV_USER/.ssh \
+    && apt-get -y autoremove \
+    && apt-get -y clean \
+    && apt-get -y autoclean
+
+EXPOSE 22
+
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+ENTRYPOINT ["/bin/bash", "/entrypoint.sh"]
+CMD [ "sleep", "infinity" ]
+
+USER ${DEV_USER}
