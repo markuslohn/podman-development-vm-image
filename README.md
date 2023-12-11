@@ -1,4 +1,4 @@
-# podman-development-vm
+# podman-development-vm-image
 
 This container image recreates a VM that can serve as the basis for a development environment. The image has so far been tested in a podman environment on a MacOS M2 system.
 
@@ -12,7 +12,7 @@ In addition, an SSH server is installed and configured to enable remote developm
 To create the image for podman, execute the following command in the root directory:
 
 ```bash
-#> cd podman-development-vm
+#> cd podman-development-vm-image
 #> podman build -t ubuntu-dev-vm -f ./Dockerfile.ubuntu
 ```
 
