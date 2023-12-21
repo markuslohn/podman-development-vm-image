@@ -1,18 +1,49 @@
 # podman-development-vm-image
 
-This container image recreates a VM that can serve as the basis for a development environment. The image has so far been tested in a podman environment on a MacOS M2 system.
-
-All important tools, e.g. git, wget, vim etc. are installed and configured. 
-
-In addition, an SSH server is installed and configured to enable remote development with corresponding IDEs, e.g. VS Code, to enable remote development. A user ```vscdev``` is set up for access to the SSH server. For this user a key is configured for logging in. The image assumes that in a Podman environment the public key is stored in a secret with the name ```vscdev_ssh_key```.
 
 
-## Build Image
+## Summary
 
-To create the image for podman, execute the following command in the root directory:
+This container image supports the virtualization of a development environment, for example to manage different projects and their technical requirements. The container image is structured in such a way that it can be used like a VM. 
 
-```bash
-#> cd podman-development-vm-image
-#> podman build -t ubuntu-dev-vm -f ./Dockerfile.ubuntu
-```
+So far, the image has been successfully tested in a Podman environment on a MacOS M2 system.
+
+
+
+## Features
+
+- Prepares an "Ubuntu"-environment
+- Installs and configures the following tools:
+  - git, jq, software-properties-common
+  - curl, wget
+  - zip, gzip, tar
+  - vim
+- Installes and configures [Ansible](https://www.ansible.com/)
+- Installes and configures an SSH server
+  - Due to this use VS Code or IntelliJ with the remote development option
+  - creates a user vscdev with public key access (**Note:** It assumes that the key will be available in a podman secret called `vscdev_ssh_key`!)
+
+
+
+## Prerequisites
+
+- [Podman](https://podman.io/docs/installation) have to be installed and configured
+
+
+
+
+## Minimal steps for application
+
+- Clone this repository (or download this solution as a .ZIP-file, then unzip it)
+
+- Build the image:
+    ```bash
+    #> cd podman-development-vm-image
+    #> podman build -t ubuntu-dev-vm -f ./Dockerfile.ubuntu
+    ```
+
+- Create a container based on the image
+    ```bash
+    #> podman run --interactive --tty -d --name testvm -p 2022:22 ubuntu-dev-vm
+    ```
 
